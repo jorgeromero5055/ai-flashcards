@@ -1,5 +1,5 @@
-import { db } from "../db/index";
-import { decks } from "../db/schema";
+import { db } from "../db/index.js";
+import { decks } from "../db/schema.js";
 
 type Deck = typeof decks.$inferSelect;
 

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "../db/index";
-import { cards } from "../db/schema";
+import { db } from "../db/index.js";
+import { cards } from "../db/schema.js";
 
 type Card = typeof cards.$inferSelect;
 
