@@ -134,3 +134,65 @@ persisted; and deck creation moved after generation so failures leave no orphan.
 **Deferred:** graceful error handling (route + UI), request input validation, and
 transactional card inserts — all carried over from v1. Highest priority is the
 partial card insert, the only failure that leaves misleading data behind.
+
+---
+
+## v3 — study mode
+
+### Data flow (happy path)
+
+1. The deck screen has already loaded its cards (v1 flow). The user presses
+   **start session** → `STUDY_PRESSED` carries those cards in → the session
+   becomes `started` at index 0, front side, score 0.
+2. The user taps the card → `CARD_FLIPPED` → side becomes `back`, and the
+   grading buttons appear.
+3. The user grades it → `GRADE_PRESSED { correct }` → the score is incremented if
+   correct, the index advances, and the side resets to `front`.
+4. Steps 2–3 repeat for each card.
+5. Grading the **last** card → `GRADE_PRESSED` → the session becomes `complete`,
+   carrying the final score and the number of cards studied.
+6. The user presses **exit** → `SESSION_ENDED` → the session returns to
+   `not-started` and the deck screen renders again.
+
+Every step is `reduce(state, event)` returning a new state. No step touches the
+network.
+
+### Failure modes
+
+This list is short, and that is the finding: **nothing in study mode crosses the
+network.** The cards were fetched before the session began, and no session data
+is written anywhere. So the v1/v2 categories — request fails, DB write fails,
+response never arrives, model returns junk — have no equivalent here. What
+remains are input and lifecycle cases.
+
+#### The deck has no cards
+
+- The start button is not rendered when `cards.length === 0`, so a session over an
+  empty deck cannot be entered. **Handled.**
+- Without this, `started` would begin at index 0 of an empty array and reading the
+  current card would throw.
+
+#### The page is reloaded mid-session
+
+- All progress is lost and the user lands back on the deck screen.
+- **Accepted, not deferred** — this is the stated cost of the in-memory decision
+  (ADR-0003), not an oversight.
+
+#### An event arrives that does not fit the current state
+
+- `reduce` matches on the pair (current state + event), so an event that fits no
+  pair falls through to `return state` and nothing changes.
+- **Handled by design.** A stray or out-of-order event is ignored rather than
+  producing a half-valid state.
+
+### Status (honest)
+
+**Handled in v3:** the empty-deck case, and out-of-order events by construction.
+Illegal session states are unrepresentable rather than defended against.
+
+**Accepted (not a defect):** sessions do not survive a reload, and scores are not
+kept after exit. Both follow from ADR-0003.
+
+**Not v3's to fix:** card text is only `notNull`, so an empty-string front or back
+can still be created and would render as a blank card. That is a card-creation
+concern from v1 and belongs to the deferred input-validation work.

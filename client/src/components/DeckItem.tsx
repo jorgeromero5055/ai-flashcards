@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import type { Card } from "../types";
+import { StudyMode } from "./StudyMode";
+import { useReducer } from "react";
+import { reduce } from "../studySession";
 
 export function DeckItem({ deckId }: { deckId: number }) {
   const [cards, setCards] = useState<Card[]>([]);
   const [front, setFront] = useState<string>("");
   const [back, setBack] = useState<string>("");
+  const [session, dispatch] = useReducer(reduce, { status: "not-started" });
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +31,11 @@ export function DeckItem({ deckId }: { deckId: number }) {
   useEffect(() => {
     loadCards();
   }, [deckId]);
+
+  if (session.status !== "not-started") {
+    return <StudyMode session={session} dispatch={dispatch} />;
+  }
+
   return (
     <div>
       <form onSubmit={submit}>
@@ -52,6 +61,15 @@ export function DeckItem({ deckId }: { deckId: number }) {
           </li>
         ))}
       </ul>
+      {cards.length > 0 && (
+        <button
+          onClick={() => {
+            dispatch({ type: "STUDY_PRESSED", cards });
+          }}
+        >
+          start session
+        </button>
+      )}
     </div>
   );
 }
