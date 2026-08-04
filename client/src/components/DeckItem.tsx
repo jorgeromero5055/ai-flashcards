@@ -8,25 +8,48 @@ export function DeckItem({ deckId }: { deckId: number }) {
   const [cards, setCards] = useState<Card[]>([]);
   const [front, setFront] = useState<string>("");
   const [back, setBack] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
   const [session, dispatch] = useReducer(reduce, { status: "not-started" });
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     fetch(`/decks/${deckId}/cards`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ deckId, front, back }),
-    }).then(() => {
-      setFront("");
-      setBack("");
-      loadCards();
-    });
+    })
+      .then(async (res) => {
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(body.error ?? "Something went wrong");
+        }
+      })
+      .then(() => {
+        setFront("");
+        setBack("");
+        loadCards();
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
   };
 
-  const loadCards = () =>
+  const loadCards = () => {
+    setError(null);
     fetch(`/decks/${deckId}/cards`)
-      .then((c) => c.json())
-      .then(setCards);
+      .then(async (res) => {
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(body.error ?? "Something went wrong");
+        }
+        return body;
+      })
+      .then(setCards)
+      .catch((err) => {
+        setError(err.message);
+      });
+  };
 
   useEffect(() => {
     loadCards();
@@ -53,6 +76,7 @@ export function DeckItem({ deckId }: { deckId: number }) {
         />
         <button type="submit">Add</button>
       </form>
+
       <ul>
         {cards.map((c) => (
           <li key={c.id}>
@@ -70,6 +94,7 @@ export function DeckItem({ deckId }: { deckId: number }) {
           start session
         </button>
       )}
+      {error && <p role="alert">{error}</p>}
     </div>
   );
 }

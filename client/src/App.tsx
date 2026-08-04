@@ -7,11 +7,22 @@ import type { Deck } from "./types";
 function App() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadDeck = () => {
+    setError(null);
     fetch("/decks")
-      .then((res) => res.json())
-      .then((data) => setDecks(data));
+      .then(async (res) => {
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(body.error ?? "Something went wrong");
+        }
+        return body;
+      })
+      .then((data) => setDecks(data))
+      .catch((err) => {
+        setError(err.message);
+      });
   };
 
   useEffect(() => {
@@ -29,6 +40,7 @@ function App() {
       ) : (
         <DeckItem deckId={selectedDeck} />
       )}
+      {error && <p role="alert">{error}</p>}
     </>
   );
 }
