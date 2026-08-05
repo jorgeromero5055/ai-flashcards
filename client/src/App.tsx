@@ -3,7 +3,7 @@ import { DeckForm } from "./components/DeckForm";
 import { useEffect, useState } from "react";
 import { DeckItem } from "./components/DeckItem";
 import type { Deck } from "./types";
-
+import { API_URL } from "../api";
 function App() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
@@ -11,7 +11,7 @@ function App() {
 
   const loadDeck = () => {
     setError(null);
-    fetch("/decks")
+    fetch(`${API_URL}/decks`)
       .then(async (res) => {
         const body = await res.json().catch(() => ({}));
         if (!res.ok) {

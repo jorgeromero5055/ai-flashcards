@@ -3,6 +3,7 @@ import type { Card } from "../types";
 import { StudyMode } from "./StudyMode";
 import { useReducer } from "react";
 import { reduce } from "../studySession";
+import { API_URL } from "../../api";
 
 export function DeckItem({ deckId }: { deckId: number }) {
   const [cards, setCards] = useState<Card[]>([]);
@@ -14,7 +15,8 @@ export function DeckItem({ deckId }: { deckId: number }) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    fetch(`/decks/${deckId}/cards`, {
+
+    fetch(`${API_URL}/decks/${deckId}/cards`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ deckId, front, back }),
@@ -37,7 +39,7 @@ export function DeckItem({ deckId }: { deckId: number }) {
 
   const loadCards = () => {
     setError(null);
-    fetch(`/decks/${deckId}/cards`)
+    fetch(`${API_URL}/decks/${deckId}/cards`)
       .then(async (res) => {
         const body = await res.json().catch(() => ({}));
         if (!res.ok) {

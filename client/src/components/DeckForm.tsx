@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_URL } from "../../api";
 
 export function DeckForm({ onCreated }: { onCreated: () => void }) {
   const [title, setTitle] = useState("");
@@ -9,7 +10,7 @@ export function DeckForm({ onCreated }: { onCreated: () => void }) {
   const submitCreation = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    fetch("/decks", {
+    fetch(`${API_URL}/decks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),
@@ -33,7 +34,7 @@ export function DeckForm({ onCreated }: { onCreated: () => void }) {
     e.preventDefault();
     setError(null);
     setIsGenerating(true);
-    fetch("/decks/generate", {
+    fetch(`${API_URL}/decks/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ topic }),
