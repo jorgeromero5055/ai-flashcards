@@ -18,8 +18,12 @@ import {
 
 import type { ErrorRequestHandler } from "express";
 
+import cors from "cors";
+
 const app = express();
 app.use(express.json());
+
+app.use(cors({ origin: "https://ai-flashcards-1-3ygc.onrender.com" }));
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   console.error(err);
