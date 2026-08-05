@@ -7,36 +7,36 @@ import { eq } from "drizzle-orm";
 type Deck = typeof decks.$inferSelect;
 
 export interface DeckRepository {
-  create(title: string): Deck;
-  list(): Deck[];
-  createWithCards(title: string, generatedCards: Cards): Deck;
-  getById(id: number): Deck | undefined;
+  create(title: string): Promise<Deck>;
+  list(): Promise<Deck[]>;
+  createWithCards(title: string, generatedCards: Cards): Promise<Deck>;
+  getById(id: number): Promise<Deck | undefined>;
 }
 
-export class SqliteDeckRepository implements DeckRepository {
-  create(title: string): Deck {
-    return db.insert(decks).values({ title }).returning().get();
-  }
-
-  list(): Deck[] {
-    return db.select().from(decks).all();
-  }
-
-  createWithCards(title: string, aiCards: Cards): Deck {
-    const deck = db.transaction((tx) => {
-      const deck = tx.insert(decks).values({ title }).returning().get();
-      for (const c of aiCards) {
-        tx.insert(cards)
-          .values({ deckId: deck.id, front: c.front, back: c.back })
-          .run();
-      }
-      return deck;
-    });
-
+export class PostgresDeckRepository implements DeckRepository {
+  async create(title: string): Promise<Deck> {
+    const [deck] = await db.insert(decks).values({ title }).returning();
     return deck;
   }
 
-  getById(id: number): Deck | undefined {
-    return db.select().from(decks).where(eq(decks.id, id)).get();
+  async list(): Promise<Deck[]> {
+    return await db.select().from(decks);
+  }
+
+  async createWithCards(title: string, aiCards: Cards): Promise<Deck> {
+    return await db.transaction(async (tx) => {
+      const [deck] = await tx.insert(decks).values({ title }).returning();
+      for (const c of aiCards) {
+        await tx
+          .insert(cards)
+          .values({ deckId: deck.id, front: c.front, back: c.back });
+      }
+      return deck;
+    });
+  }
+
+  async getById(id: number): Promise<Deck | undefined> {
+    const [deck] = await db.select().from(decks).where(eq(decks.id, id));
+    return deck;
   }
 }

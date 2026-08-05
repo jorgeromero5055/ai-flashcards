@@ -5,19 +5,20 @@ import { cards } from "../db/schema.js";
 type Card = typeof cards.$inferSelect;
 
 export interface CardRepository {
-  // 🔵 menu
-  add(deckId: number, front: string, back: string): Card;
-  listByDeck(deckId: number): Card[];
+  add(deckId: number, front: string, back: string): Promise<Card>;
+  listByDeck(deckId: number): Promise<Card[]>;
 }
 
-export class SqliteCardRepository implements CardRepository {
-  // 🔵 kitchen
-  add(deckId: number, front: string, back: string): Card {
-    return db.insert(cards).values({ deckId, front, back }).returning().get(); // ⚪ insert spelling
+export class PostgresCardRepository implements CardRepository {
+  async add(deckId: number, front: string, back: string): Promise<Card> {
+    const [card] = await db
+      .insert(cards)
+      .values({ deckId, front, back })
+      .returning();
+    return card;
   }
 
-  listByDeck(deckId: number): Card[] {
-    // 🔵 the FK filter: only comments whose postId matches
-    return db.select().from(cards).where(eq(cards.deckId, deckId)).all();
+  async listByDeck(deckId: number): Promise<Card[]> {
+    return await db.select().from(cards).where(eq(cards.deckId, deckId));
   }
 }

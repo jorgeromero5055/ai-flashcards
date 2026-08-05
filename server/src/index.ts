@@ -2,12 +2,12 @@ import "dotenv/config";
 import express from "express";
 
 import {
-  SqliteDeckRepository,
+  PostgresDeckRepository,
   DeckRepository,
 } from "./repositories/deckRepository.js";
 
 import {
-  SqliteCardRepository,
+  PostgresCardRepository,
   CardRepository,
 } from "./repositories/cardRepository.js";
 
@@ -16,51 +16,52 @@ import {
   GeminiResponseGenerator,
 } from "./repositories/ResponseGenerator.js";
 
+import type { ErrorRequestHandler } from "express";
+
 const app = express();
 app.use(express.json());
 
-const deckRepo: DeckRepository = new SqliteDeckRepository();
-const cardRepo: CardRepository = new SqliteCardRepository();
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  res.status(500).json({ error: "something went wrong" });
+};
+const deckRepo: DeckRepository = new PostgresDeckRepository();
+const cardRepo: CardRepository = new PostgresCardRepository();
 const cardGenerator: ResponseGenerator = new GeminiResponseGenerator();
 
-app.use((err, req, res, next) => {
-  res.status(500).json({ error: "something went wrong" });
-});
-
-app.post("/decks", (req, res) => {
+app.post("/decks", async (req, res) => {
   if (typeof req.body.title !== "string" || req.body.title.trim() === "")
     return res.status(400).json({ error: "title is required" });
 
-  const deck = deckRepo.create(req.body.title);
+  const deck = await deckRepo.create(req.body.title);
   res.status(201).json(deck);
 });
 
-app.get("/decks", (req, res) => {
-  res.json(deckRepo.list());
+app.get("/decks", async (req, res) => {
+  res.json(await deckRepo.list());
 });
 
-app.post("/decks/:id/cards", (req, res) => {
+app.post("/decks/:id/cards", async (req, res) => {
   if (typeof req.body.front !== "string" || req.body.front.trim() === "")
     return res.status(400).json({ error: "front is required" });
   if (typeof req.body.back !== "string" || req.body.back.trim() === "")
     return res.status(400).json({ error: "back is required" });
   const deckId = Number(req.params.id);
-  const deckExist = deckRepo.getById(deckId);
+  const deckExist = await deckRepo.getById(deckId);
   if (!deckExist) {
     return res.status(404).json({ error: "deck doesn't exist" });
   }
 
-  const card = cardRepo.add(deckId, req.body.front, req.body.back);
+  const card = await cardRepo.add(deckId, req.body.front, req.body.back);
   res.status(201).json(card);
 });
 
-app.get("/decks/:id/cards", (req, res) => {
+app.get("/decks/:id/cards", async (req, res) => {
   const deckId = Number(req.params.id);
-  const deckExist = deckRepo.getById(deckId);
+  const deckExist = await deckRepo.getById(deckId);
   if (!deckExist) {
     return res.status(404).json({ error: "deck doesn't exist" });
   }
-  res.json(cardRepo.listByDeck(deckId));
+  res.json(await cardRepo.listByDeck(deckId));
 });
 
 app.post("/decks/generate", async (req, res) => {
@@ -68,8 +69,10 @@ app.post("/decks/generate", async (req, res) => {
     return res.status(400).json({ error: "topic is required" });
   const topic = req.body.topic;
   const cards = await cardGenerator.generate(topic);
-  deckRepo.createWithCards(topic, cards);
+  await deckRepo.createWithCards(topic, cards);
   res.status(201).json(cards);
 });
+
+app.use(errorHandler);
 
 app.listen(3000, () => console.log("http://localhost:3000"));

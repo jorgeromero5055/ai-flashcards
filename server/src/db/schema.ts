@@ -1,16 +1,13 @@
-import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, text, pgTable, serial, timestamp } from "drizzle-orm/pg-core";
 
-export const decks = sqliteTable("decks", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const decks = pgTable("decks", {
+  id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(current_timestamp)`),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const cards = sqliteTable("cards", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const cards = pgTable("cards", {
+  id: serial("id").primaryKey(),
   deckId: integer("deck_id")
     .notNull()
     .references(() => decks.id, { onDelete: "cascade" }),
