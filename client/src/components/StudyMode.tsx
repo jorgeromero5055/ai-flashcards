@@ -14,27 +14,25 @@ export function StudyMode({
     return (
       <div>
         <button
-          onClick={() => {
-            dispatch({ type: "CARD_FLIPPED" });
-          }}
+          className="card"
+          onClick={() => dispatch({ type: "CARD_FLIPPED" })}
         >
-          <p>{text}</p>
+          {text}
         </button>
+
         {isBack && (
-          <div>
+          <div className="actions">
             <button
-              onClick={() => {
-                dispatch({ type: "GRADE_PRESSED", correct: false });
-              }}
+              onClick={() =>
+                dispatch({ type: "GRADE_PRESSED", correct: false })
+              }
             >
-              incorrect
+              Missed it
             </button>
             <button
-              onClick={() => {
-                dispatch({ type: "GRADE_PRESSED", correct: true });
-              }}
+              onClick={() => dispatch({ type: "GRADE_PRESSED", correct: true })}
             >
-              correct
+              Got it
             </button>
           </div>
         )}
@@ -44,17 +42,13 @@ export function StudyMode({
 
   if (session.status === "complete") {
     return (
-      <div>
-        <p>your score</p>
-        <p>
+      <div className="score">
+        <p className="score-label">Your score</p>
+        <p className="score-value">
           {session.correctCount}/{session.totalCount}
         </p>
-        <button
-          onClick={() => {
-            dispatch({ type: "SESSION_ENDED" });
-          }}
-        >
-          exit
+        <button onClick={() => dispatch({ type: "SESSION_ENDED" })}>
+          Exit
         </button>
       </div>
     );

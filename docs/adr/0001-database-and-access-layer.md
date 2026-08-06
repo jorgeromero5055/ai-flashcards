@@ -46,3 +46,30 @@ Use **SQLite** as the database engine and **Drizzle** as the access layer
   traffic, so a real production deployment will likely require the Postgres
   swap. We accept simplicity and learning speed now in exchange for deferring
   production-scale concerns.
+
+## Update — v6 (2026-08): the swap happened
+
+The prediction above was tested. Postgres (Neon) replaced SQLite so the app could
+be deployed, since a hosted filesystem is ephemeral.
+
+**What held.** The client did not change at all — it was always talking HTTP, and
+HTTP was always asynchronous. The schema ported almost unchanged: same tables,
+same columns, same foreign key and cascade; only `sqliteTable`/`serial`/`timestamp`
+spellings differed.
+
+**What did not.** "A one-file change with no impact on routes" was wrong. SQLite is
+a file read synchronously; Postgres is a server, so every query became
+asynchronous. That changed the repository *interfaces* — `list(): Deck[]` became
+`list(): Promise<Deck[]>` — and a return type is part of the contract, so every
+caller had to change too. All five routes became `async`/`await`.
+
+**The lesson worth keeping:** a seam contains what it can express in its interface.
+It contained the driver and the SQL dialect. It could not contain synchronous
+versus asynchronous, because that lives *in* the interface rather than behind it.
+The most dangerous part of that conversion was silent: a missing `await` before a
+truthiness check (`if (!deckExist)`) leaves a Promise, which is always truthy, so
+the guard quietly stops working.
+
+**Also lost:** migration history. Migrations are dialect-specific, so the SQLite
+files were deleted and regenerated. Nothing protects migration history across a
+dialect change — on a system with live data, that is the expensive part.

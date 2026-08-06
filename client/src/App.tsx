@@ -30,18 +30,18 @@ function App() {
   }, []);
 
   return (
-    <>
+    <div className="container">
       {!selectedDeck ? (
-        <div>
+        <>
           <h1>Decks</h1>
           <DeckForm onCreated={loadDeck} />
           <DeckList decks={decks} onSelect={setSelectedDeck} />
-        </div>
+        </>
       ) : (
-        <DeckItem deckId={selectedDeck} />
+        <DeckItem deckId={selectedDeck} onBack={() => setSelectedDeck(null)} />
       )}
       {error && <p role="alert">{error}</p>}
-    </>
+    </div>
   );
 }
 

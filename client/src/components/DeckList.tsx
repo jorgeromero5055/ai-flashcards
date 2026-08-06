@@ -10,7 +10,7 @@ export function DeckList({
   return (
     <ul>
       {decks.map((d) => (
-        <li key={d.id} onClick={() => onSelect(d.id)}>
+        <li key={d.id} className="row" onClick={() => onSelect(d.id)}>
           {d.title}
         </li>
       ))}

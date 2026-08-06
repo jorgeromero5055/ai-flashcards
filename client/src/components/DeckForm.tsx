@@ -61,25 +61,33 @@ export function DeckForm({ onCreated }: { onCreated: () => void }) {
   return (
     <>
       <form onSubmit={submitCreation}>
-        <input
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-          }}
-        />
+        <label className="field">
+          Deck title
+          <input
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+            }}
+          />
+        </label>
         <button type="submit">Add</button>
       </form>
+
       <form onSubmit={submitGenerate}>
-        <input
-          value={topic}
-          onChange={(e) => {
-            setTopic(e.target.value);
-          }}
-        />
+        <label className="field">
+          Topic
+          <input
+            value={topic}
+            onChange={(e) => {
+              setTopic(e.target.value);
+            }}
+          />
+        </label>
         <button disabled={isGenerating} type="submit">
-          {isGenerating ? "Generating" : "Generate"}
+          {isGenerating ? "Generating…" : "Generate"}
         </button>
       </form>
+
       {error && <p role="alert">{error}</p>}
     </>
   );

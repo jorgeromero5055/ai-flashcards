@@ -5,12 +5,19 @@ import { useReducer } from "react";
 import { reduce } from "../studySession";
 import { API_URL } from "../../api";
 
-export function DeckItem({ deckId }: { deckId: number }) {
+export function DeckItem({
+  deckId,
+  onBack,
+}: {
+  deckId: number;
+  onBack: () => void;
+}) {
   const [cards, setCards] = useState<Card[]>([]);
   const [front, setFront] = useState<string>("");
   const [back, setBack] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [session, dispatch] = useReducer(reduce, { status: "not-started" });
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,37 +70,42 @@ export function DeckItem({ deckId }: { deckId: number }) {
 
   return (
     <div>
+      <button className="back" onClick={onBack}>
+        ← Back to decks
+      </button>
       <form onSubmit={submit}>
-        <input
-          value={front}
-          onChange={(e) => {
-            setFront(e.target.value);
-          }}
-        />
-        <input
-          value={back}
-          onChange={(e) => {
-            setBack(e.target.value);
-          }}
-        />
+        <label className="field">
+          Front of card
+          <input value={front} onChange={(e) => setFront(e.target.value)} />
+        </label>
+
+        <label className="field">
+          Back of card
+          <input value={back} onChange={(e) => setBack(e.target.value)} />
+        </label>
         <button type="submit">Add</button>
       </form>
 
       <ul>
         {cards.map((c) => (
-          <li key={c.id}>
-            <p>{c.front}</p>
-            <p>{c.back}</p>
+          <li
+            key={c.id}
+            className="row"
+            onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
+          >
+            <p className="row-front">{c.front}</p>
+            {expandedId === c.id && <p className="row-back">{c.back}</p>}
           </li>
         ))}
       </ul>
       {cards.length > 0 && (
         <button
+          className="start-btn"
           onClick={() => {
             dispatch({ type: "STUDY_PRESSED", cards });
           }}
         >
-          start session
+          Start session
         </button>
       )}
       {error && <p role="alert">{error}</p>}
