@@ -1,19 +1,17 @@
-/* 🔵 TOKENS — every value the app uses, defined once, referenced everywhere */
+/* Design tokens. Every spacing, size, and colour in the app resolves to one of
+   these, so nothing hardcodes a raw value. */
 :root {
-  /* spacing: multiples of 8, so gaps can only ever be consistent */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 16px;
   --space-4: 24px;
   --space-5: 40px;
 
-  /* type: three sizes, no more */
   --text-sm: 0.875rem;
   --text-base: 1rem;
   --text-lg: 1.5rem;
   --text-xl: 3rem;
 
-  /* colour: neutrals + exactly one accent */
   --bg: #fafafa;
   --surface: #ffffff;
   --text: #1a1a1a;
@@ -25,18 +23,14 @@
   --radius: 8px;
 }
 
-/* ⚪ reset — one line that matters: padding/border count inside the width */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
-}
-
-/* ⚪ base page styling */
-body {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: var(--text-base);
   line-height: 1.5;
@@ -44,14 +38,14 @@ body {
   background: var(--bg);
 }
 
-/* 🔵 CONTAINER — the only thing that owns page width and centering */
+/* The only rule that owns page width and centering. Components never set their
+   own outer margins. */
 .container {
   max-width: 680px;
   margin: 0 auto;
   padding: var(--space-5) var(--space-3);
 }
 
-/* 🔵 style the ELEMENT once — not per component */
 button {
   font: inherit;
   padding: var(--space-2) var(--space-3);
@@ -88,6 +82,7 @@ h1 {
 
 form {
   display: flex;
+  align-items: flex-end;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
@@ -100,11 +95,7 @@ form {
   color: var(--muted);
 }
 
-form {
-  align-items: flex-end;
-}
-
-/* card must beat `button:hover:not(:disabled)`, so it needs the element too */
+/* Selectors include the element so they outrank `button:hover:not(:disabled)`. */
 button.card {
   width: 100%;
   min-height: 200px;
@@ -124,13 +115,28 @@ button.card:hover {
   border-color: var(--accent);
 }
 
+button.back {
+  background: none;
+  color: var(--muted);
+  padding: 0;
+  margin-bottom: var(--space-3);
+}
+button.back:hover {
+  background: none;
+  color: var(--accent);
+}
+
 .actions {
   display: flex;
+  justify-content: center;
   gap: var(--space-2);
   margin-top: var(--space-3);
 }
 
-/* lists become stacked bars */
+.start-btn {
+  margin-top: var(--space-3);
+}
+
 ul {
   list-style: none;
   padding: 0;
@@ -176,23 +182,4 @@ li {
   font-size: var(--text-xl);
   font-weight: 600;
   margin: 0 0 var(--space-4);
-}
-
-.start-btn {
-  margin-top: var(--space-3);
-}
-
-button.back {
-  background: none;
-  color: var(--muted);
-  padding: 0;
-  margin-bottom: var(--space-3);
-}
-button.back:hover {
-  background: none;
-  color: var(--accent);
-}
-
-.actions {
-  justify-content: center;
 }

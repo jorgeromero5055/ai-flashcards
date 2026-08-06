@@ -59,8 +59,7 @@ rather than the database.
 - (−) **A schema constrains shape, not quality.** The model can still return an
   empty array, blank strings, or off-topic cards. The output remains untrusted
   input, so the generator validates it at the boundary before returning
-  (`unknown` → checks → trusted type). See the v2 section of
-  `data-flow-and-failure-modes.md`.
+  (`unknown` → checks → trusted type). See `data-flow-and-failure-modes.md`.
 - (−) Structured output is a provider capability, so a future provider without it
   would force the implementation back to prompt-and-parse. The seam contains that
   risk to one file.

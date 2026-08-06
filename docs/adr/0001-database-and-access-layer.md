@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted
+Accepted, then **partly superseded** — SQLite was replaced with Postgres in v6 when
+the app was deployed. The access layer and repository-seam decisions still stand.
+The original reasoning is left intact below, followed by an update recording what
+the swap proved and disproved.
 
 ## Context
 
